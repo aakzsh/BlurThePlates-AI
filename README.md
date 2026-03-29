@@ -78,5 +78,3 @@ This project is designed to act as a worker node in an n8n automation flow:
 3.  **Wait Node:** Allows time for the GPU to process the frames.
 4.  **HTTP Request (GET):** Downloads the resulting "blurred" video.
 5.  **YouTube Node:** Uploads the final processed video to the channel.
-
-**Would you like me to help you refine the Flask app code to handle multiple simultaneous requests using a task queue like Celery?**
