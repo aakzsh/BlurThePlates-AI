@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>BlurThePlates AI</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --primary: #1e88e5;
+  --primary-light: #e3f2fd;
+  --text-primary: #1f2933;
+  --text-secondary: #6b7280;
+  --border: #e5e7eb;
+  --bg: #f9fafb;
+  --white: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Inter", sans-serif;
+}
+
+body {
+  height: 100vh;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+}
+
+/* Card */
+
+.container {
+  width: 460px;
+  background: var(--white);
+  border-radius: 12px;
+  padding: 36px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+  text-align: center;
+}
+
+/* Header */
+
+.title {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+}
+
+/* Dropzone */
+
+.dropzone {
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  padding: 32px;
+  cursor: pointer;
+  transition: border-color .2s ease, background .2s ease;
+  color: var(--text-secondary);
+}
+
+.dropzone:hover {
+  border-color: var(--primary);
+  background: linear-gradient(
+    180deg,
+    rgba(30,136,229,0.04),
+    rgba(30,136,229,0.01)
+  );
+}
+
+.dropzone.drag {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+/* Button */
+
+button {
+  margin-top: 24px;
+  padding: 12px 26px;
+  border-radius: 6px;
+  border: none;
+  background: var(--primary);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: box-shadow .2s ease, transform .1s ease;
+}
+
+button:hover {
+  box-shadow: 0 6px 16px rgba(30,136,229,0.25);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+/* Loader */
+
+.loader {
+  display: none;
+  margin-top: 28px;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 4px solid #e5e7eb;
+  border-top: 4px solid var(--primary);
+  animation: spin 1s linear infinite;
+  margin: auto;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loader p {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Download */
+
+.download {
+  display: none;
+  margin-top: 28px;
+}
+
+.download a {
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--primary);
+  padding: 10px 22px;
+  border-radius: 6px;
+  border: 1px solid var(--primary);
+  transition: background .2s ease;
+}
+
+.download a:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(30,136,229,0.08),
+    rgba(30,136,229,0.03)
+  );
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="title">PlateBlur AI</div>
+  <div class="subtitle">Automatic license plate anonymization</div>
+
+  <div class="dropzone" id="dropzone">
+    Drop video here or click to upload
+    <input type="file" id="fileInput" hidden>
+  </div>
+
+  <button onclick="upload()">Process Video</button>
+
+  <div class="loader" id="loader">
+    <div class="spinner"></div>
+    <p>Processing video…</p>
+  </div>
+
+  <div class="download" id="download">
+    <a id="downloadLink">Download blurred video</a>
+  </div>
+
+</div>
+
+<script>
+let selectedFile = null;
+
+const dropzone = document.getElementById("dropzone");
+const fileInput = document.getElementById("fileInput");
+
+dropzone.onclick = () => fileInput.click();
+
+fileInput.onchange = e => {
+  selectedFile = e.target.files[0];
+  dropzone.textContent = `Selected: ${selectedFile.name}`;
+};
+
+dropzone.addEventListener("dragover", e => {
+  e.preventDefault();
+  dropzone.classList.add("drag");
+});
+
+dropzone.addEventListener("dragleave", () => {
+  dropzone.classList.remove("drag");
+});
+
+dropzone.addEventListener("drop", e => {
+  e.preventDefault();
+  dropzone.classList.remove("drag");
+  selectedFile = e.dataTransfer.files[0];
+  dropzone.textContent = `Selected: ${selectedFile.name}`;
+});
+
+async function upload() {
+  if (!selectedFile) {
+    alert("Please select a video");
+    return;
+  }
+
+  document.getElementById("loader").style.display = "block";
+
+  const formData = new FormData();
+  formData.append("video", selectedFile);
+
+  const response = await fetch("/upload", { method: "POST", body: formData });
+  const data = await response.json();
+
+  document.getElementById("loader").style.display = "none";
+
+  const link = "/download/" + data.download_url.split("/").pop();
+  const downloadLink = document.getElementById("downloadLink");
+  downloadLink.href = link;
+
+  document.getElementById("download").style.display = "block";
+}
+</script>
+
+</body>
+</html>
